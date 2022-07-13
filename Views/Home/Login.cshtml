@@ -1,0 +1,11 @@
+@{
+    ViewData["Title"] = "Log in";
+}
+
+<form class="d-flex flex-column w-25">
+    E-mail:<input type="email" name="email">
+    Username:<input type="text" name="username">
+    Password:<input type="password" name="password">
+    <input type="submit" class="btn-primary mt-3" value="Log in">
+    <a asp-controller="Home" asp-action="Signup">Sign up</a>
+</form>
