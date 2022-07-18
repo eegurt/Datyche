@@ -1,25 +1,30 @@
-﻿using Datyche.Models;
+using Datyche.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace Datyche.Controllers
 {
-    public class HomeController : Controller
+    public class AuthController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<AuthController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        public AuthController(ILogger<AuthController> logger)
         {
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult Index() // Login
         {
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult Signup()
         {
+            string email = Request.Form["email"];
+            string username = Request.Form["username"];
+            string password = Request.Form["password"];
+            User signedUser = new User(email, username, password);
+            
             return View();
         }
 
