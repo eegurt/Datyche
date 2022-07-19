@@ -13,21 +13,24 @@ namespace Datyche.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index() // Login
+        public IActionResult Login()
         {
             return View();
         }
 
+        [HttpGet]
         public IActionResult Signup()
         {
-            string email = Request.Form["email"];
-            string username = Request.Form["username"];
-            string password = Request.Form["password"];
-            User signedUser = new User(email, username, password);
-            
             return View();
         }
 
+        [HttpPost]
+        public IActionResult Signup(string email, string username, string password)
+        {
+            User signedUser = new User(email, username, password);
+
+            return Json(signedUser);
+        }
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

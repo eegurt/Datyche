@@ -1,11 +1,13 @@
+@model Datyche.Models.User;
+
 @{
     ViewData["Title"] = "Sign up";
 }
 
-<form class="d-flex flex-column w-25">
-    E-mail:<input type="email" name="email">
-    Username:<input type="text" name="username">
-    Password:<input type="password" name="password">
+<form class="d-flex flex-column w-25" asp-controller="Auth" asp-action="Signup" method="post">
+    E-mail:<input type="email" asp-for="Email">
+    Username:<input type="text" asp-for="Name">
+    Password:<input type="password" asp-for="Password">
     <input type="submit" class="btn-primary mt-3" value="Sign up">
     <a asp-controller="Auth" asp-action="Login">Log in</a>
 </form>
