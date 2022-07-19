@@ -4,9 +4,9 @@
     ViewData["Title"] = "Sign up";
 }
 
-<form class="d-flex flex-column w-25" asp-controller="Auth" asp-action="Signup" method="post">
+<form class="d-flex flex-column w-25" asp-controller="Auth" asp-action="Signup">
     E-mail:<input type="email" asp-for="Email">
-    Username:<input type="text" asp-for="Name">
+    Username:<input type="text" asp-for="Username">
     Password:<input type="password" asp-for="Password">
     <input type="submit" class="btn-primary mt-3" value="Sign up">
     <a asp-controller="Auth" asp-action="Login">Log in</a>

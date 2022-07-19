@@ -4,12 +4,12 @@ namespace Datyche.Models
     {
         private int Id { get; set; }
         public string Email { get; set; }
-        public string Name { get; set; }
+        public string Username { get; set; }
         public string Password { get; set; }
 
         public User(string email, string username, string password) {
             this.Email = email;
-            this.Name = username;
+            this.Username = username;
             this.Password = password;
         }
     }
