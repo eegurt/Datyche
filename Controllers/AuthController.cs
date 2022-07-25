@@ -1,6 +1,8 @@
 using Datyche.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace Datyche.Controllers
 {
@@ -31,6 +33,14 @@ namespace Datyche.Controllers
             {
                 return new StatusCodeResult(400);
             }
+
+            var client = new MongoClient(
+                "mongodb+srv://egurt:truge@datyche.yhsit18.mongodb.net/test"
+            );
+            var database = client.GetDatabase("datyche");
+            var collection = database.GetCollection<BsonDocument>("users");
+            collection.InsertOne(user.ToBsonDocument());
+
             return Json(user);
         }
 
