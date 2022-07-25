@@ -25,12 +25,15 @@ namespace Datyche.Controllers
         }
 
         [HttpPost]
-        public IActionResult Signup(string email, string username, string password)
+        public IActionResult Signup(User user)
         {
-            User signedUser = new User(email, username, password);
-
-            return Json(signedUser);
+            if (!ModelState.IsValid)
+            {
+                return new StatusCodeResult(400);
+            }
+            return Json(user);
         }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

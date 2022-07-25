@@ -1,16 +1,23 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Datyche.Models
 {
     public class User
     {
-        private int Id { get; set; }
+        public int Id { get; set; } = 1;
+
+        [Required]
         public string Email { get; set; }
+
+        [Required]
+        [StringLength(20, MinimumLength = 4)]
+        [RegularExpression(@"[a-zA-Z]+[\w]*")]
         public string Username { get; set; }
+
+        [Required]
+        [StringLength(20, MinimumLength = 8)]
         public string Password { get; set; }
 
-        public User(string email, string username, string password) {
-            this.Email = email;
-            this.Username = username;
-            this.Password = password;
-        }
+        public User() { }
     }
 }
