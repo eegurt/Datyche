@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using BCrypt.Net;
 
 namespace Datyche.Controllers
 {
@@ -33,6 +34,7 @@ namespace Datyche.Controllers
             {
                 return new StatusCodeResult(400);
             }
+            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
             var client = new MongoClient(
                 "mongodb+srv://egurt:truge@datyche.yhsit18.mongodb.net/test"
