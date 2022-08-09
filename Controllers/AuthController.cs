@@ -16,9 +16,32 @@ namespace Datyche.Controllers
             _logger = logger;
         }
 
+        [HttpGet]
         public IActionResult Login()
         {
             return View();
+        }
+
+        [HttpPost]
+        public string Login(User user)
+        {
+            // if (!ModelState.IsValid)
+            // {
+            //     return "Невалидные данные";
+            // }
+
+            var client = new MongoClient(
+                "mongodb+srv://egurt:truge@datyche.yhsit18.mongodb.net/test"
+            );
+            var database = client.GetDatabase("datyche");
+            var collection = database.GetCollection<BsonDocument>("users");
+
+            var filterBuilder = Builders<BsonDocument>.Filter;
+            var filter = filterBuilder.Eq("Username", user.Username) & filterBuilder.Eq("Password", BCrypt.Net.BCrypt.HashPassword(user.Password));
+
+            var document = collection.Find(filter);
+
+            return $"{document.ToString()}";
         }
 
         [HttpGet]
@@ -34,6 +57,7 @@ namespace Datyche.Controllers
             {
                 return new StatusCodeResult(400);
             }
+
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
             var client = new MongoClient(

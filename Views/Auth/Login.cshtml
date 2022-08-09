@@ -1,11 +1,20 @@
+@model User;
+
 @{
     ViewData["Title"] = "Log in";
 }
 
-<form class="d-flex flex-column w-25">
-    E-mail:<input type="email" name="email">
-    Username:<input type="text" name="username">
-    Password:<input type="password" name="password">
-    <input type="submit" class="btn-primary mt-3" value="Log in">
-    <a asp-controller="Auth" asp-action="Signup">Sign up</a>
-</form>
+<div class="d-flex">
+    <form class="d-flex flex-column" asp-controller="Auth" asp-action="Login" method="post">
+        <div class="mt-3">
+            <label asp-for="Username">Username</label>
+            <input class="d-block" type="text" asp-for="Username">
+        </div>
+        <div class="mt-3">
+            <label asp-for="Password">Password</label>
+            <input class="d-block" type="password" asp-for="Password">
+        </div>
+        <input type="submit" class="btn-primary mt-3" value="Log in">
+        <a asp-controller="Auth" asp-action="Signup">Sign up</a>
+    </form>
+</div>
