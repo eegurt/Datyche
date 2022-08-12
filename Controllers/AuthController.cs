@@ -4,6 +4,9 @@ using System.Diagnostics;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using BCrypt.Net;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Datyche.Controllers
 {
@@ -23,12 +26,12 @@ namespace Datyche.Controllers
         }
 
         [HttpPost]
-        public string Login(User user)
+        public async Task<IActionResult> Login(UserNamePass input)
         {
-            // if (!ModelState.IsValid)
-            // {
-            //     return "Невалидные данные";
-            // }
+            if (!ModelState.IsValid)
+            {
+                return new StatusCodeResult(400);
+            }
 
             var client = new MongoClient(
                 "mongodb+srv://egurt:truge@datyche.yhsit18.mongodb.net/test"
@@ -37,11 +40,22 @@ namespace Datyche.Controllers
             var collection = database.GetCollection<BsonDocument>("users");
 
             var filterBuilder = Builders<BsonDocument>.Filter;
-            var filter = filterBuilder.Eq("Username", user.Username) & filterBuilder.Eq("Password", BCrypt.Net.BCrypt.HashPassword(user.Password));
+            var filter = filterBuilder.Eq("Username", input.Username) & filterBuilder.Eq("Password", BCrypt.Net.BCrypt.HashPassword(input.Password));
+            var user = collection.Find(filter);
 
-            var document = collection.Find(filter);
+            var claims = new List<Claim> { new Claim(ClaimTypes.Name, input.Username)};
+            ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, "Cookies");
+            var context = HttpContext;
+            await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
 
-            return $"{document.ToString()}";
+            return Redirect("/User/Index");
+        }
+
+        public async Task<IActionResult> Logout()
+        {
+            var context = HttpContext;
+            await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return Redirect("/Auth/Login");
         }
 
         [HttpGet]
