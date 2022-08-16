@@ -1,4 +1,3 @@
-
 using Datyche.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -16,8 +15,9 @@ namespace Datyche.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(UserNamePass user)
         {
+            ViewBag.Username = user.Username;
             return View();
         }
 

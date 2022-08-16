@@ -30,32 +30,45 @@ namespace Datyche.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return new StatusCodeResult(400);
+                return new ForbidResult();
             }
 
-            var client = new MongoClient(
-                "mongodb+srv://egurt:truge@datyche.yhsit18.mongodb.net/test"
-            );
+            var client = new MongoClient("mongodb+srv://egurt:truge@datyche.yhsit18.mongodb.net/test");
             var database = client.GetDatabase("datyche");
             var collection = database.GetCollection<BsonDocument>("users");
 
-            var filterBuilder = Builders<BsonDocument>.Filter;
-            var filter = filterBuilder.Eq("Username", input.Username) & filterBuilder.Eq("Password", BCrypt.Net.BCrypt.HashPassword(input.Password));
-            var user = collection.Find(filter);
+            bool verified;
+            var filter = Builders<BsonDocument>.Filter.Eq("Username", input.Username);
+            var projection = Builders<BsonDocument>.Projection.Include("Password").Exclude("_id");
+            try
+            {
+                string hashedPassword = collection.Find(filter).Project(projection).FirstOrDefault().Single().Value.ToString();
+                verified = BCrypt.Net.BCrypt.Verify(input.Password, hashedPassword);
+            }
+            catch (System.Exception)
+            {
+                return new ForbidResult();
+            }
+            if(!verified) return new ForbidResult();
 
-            var claims = new List<Claim> { new Claim(ClaimTypes.Name, input.Username)};
-            ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, "Cookies");
-            var context = HttpContext;
-            await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+            try
+            {
+                var claims = new List<Claim> { new Claim(ClaimTypes.Name, input.Username) };
+                var claimsIdentity = new ClaimsIdentity(claims, "Cookies");
+                await HttpContext.SignInAsync("Cookies", new ClaimsPrincipal(claimsIdentity));
 
-            return Redirect("/User/Index");
+                return RedirectToAction("Index", "User", input);
+            }
+            catch (System.Exception)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
         }
 
         public async Task<IActionResult> Logout()
         {
-            var context = HttpContext;
-            await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return Redirect("/Auth/Login");
+            await HttpContext.SignOutAsync("Cookies");
+            return RedirectToAction("Login", "Auth");
         }
 
         [HttpGet]
