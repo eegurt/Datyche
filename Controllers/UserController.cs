@@ -15,9 +15,8 @@ namespace Datyche.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index(UserNamePass user)
+        public IActionResult Index()
         {
-            ViewBag.Username = user.Username;
             return View();
         }
 

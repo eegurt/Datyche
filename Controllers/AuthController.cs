@@ -37,27 +37,31 @@ namespace Datyche.Controllers
             var database = client.GetDatabase("datyche");
             var collection = database.GetCollection<BsonDocument>("users");
 
-            bool verified;
+            bool verifiedPassword;
             var filter = Builders<BsonDocument>.Filter.Eq("Username", input.Username);
             var projection = Builders<BsonDocument>.Projection.Include("Password").Exclude("_id");
             try
             {
                 string hashedPassword = collection.Find(filter).Project(projection).FirstOrDefault().Single().Value.ToString();
-                verified = BCrypt.Net.BCrypt.Verify(input.Password, hashedPassword);
+                verifiedPassword = BCrypt.Net.BCrypt.Verify(input.Password, hashedPassword);
             }
             catch (System.Exception)
             {
                 return new ForbidResult();
             }
-            if(!verified) return new ForbidResult();
+
+            if(!verifiedPassword) return new ForbidResult();
 
             try
             {
-                var claims = new List<Claim> { new Claim(ClaimTypes.Name, input.Username) };
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, input.Username)
+                };
                 var claimsIdentity = new ClaimsIdentity(claims, "Cookies");
                 await HttpContext.SignInAsync("Cookies", new ClaimsPrincipal(claimsIdentity));
 
-                return RedirectToAction("Index", "User", input);
+                return RedirectToAction("Index", "User");
             }
             catch (System.Exception)
             {
