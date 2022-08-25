@@ -33,10 +33,7 @@ namespace Datyche.Controllers
                 return new ForbidResult();
             }
 
-            var client = new MongoClient("mongodb+srv://egurt:truge@datyche.yhsit18.mongodb.net/test");
-            var database = client.GetDatabase("datyche");
-            var collection = database.GetCollection<BsonDocument>("users");
-
+            var collection = GetDBUsersCollection();
             bool verifiedPassword;
             var filter = Builders<BsonDocument>.Filter.Eq("Username", input.Username);
             var projection = Builders<BsonDocument>.Projection.Include("Password").Exclude("_id");
@@ -91,11 +88,7 @@ namespace Datyche.Controllers
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
-            var client = new MongoClient(
-                "mongodb+srv://egurt:truge@datyche.yhsit18.mongodb.net/test"
-            );
-            var database = client.GetDatabase("datyche");
-            var collection = database.GetCollection<BsonDocument>("users");
+            var collection = GetDBUsersCollection();
             collection.InsertOne(user.ToBsonDocument());
 
             return Json(user);
@@ -105,6 +98,15 @@ namespace Datyche.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        [NonAction]
+        private IMongoCollection<BsonDocument> GetDBUsersCollection()
+        {
+            var client = new MongoClient("mongodb+srv://egurt:truge@datyche.yhsit18.mongodb.net/test");
+            var database = client.GetDatabase("datyche");
+            var collection = database.GetCollection<BsonDocument>("users");
+            return collection;
         }
     }
 }
