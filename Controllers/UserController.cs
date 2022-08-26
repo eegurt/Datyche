@@ -2,6 +2,7 @@ using Datyche.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Datyche.Controllers
 {
@@ -16,8 +17,14 @@ namespace Datyche.Controllers
         }
 
         public IActionResult Index()
-        {
-            return View();
+        {   
+            UserViewModel userViewModel = new UserViewModel()
+            {
+                // Id = User.Claims.Where(c => c.Type == "Id").FirstOrDefault().ToString(),
+                // Email = User.Claims.Where(c => c.Type == ClaimTypes.Email).FirstOrDefault().ToString(),
+                Username = User.Identity.Name
+            };
+            return View(userViewModel);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
