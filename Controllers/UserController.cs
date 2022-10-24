@@ -17,13 +17,15 @@ namespace Datyche.Controllers
         }
 
         public IActionResult Index()
-        {   
-            UserViewModel userViewModel = new UserViewModel()
-            {
-                // Id = User.Claims.Where(c => c.Type == "Id").FirstOrDefault().ToString(),
-                // Email = User.Claims.Where(c => c.Type == ClaimTypes.Email).FirstOrDefault().ToString(),
-                Username = User.Identity.Name
-            };
+        {
+            var claims = ClaimsPrincipal.Current.Identities.FirstOrDefault().Claims.ToList();
+
+            var id = claims?.FirstOrDefault(x => x.Type.Equals("Id"))?.Value;
+            var email = claims?.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email))?.Value;
+            var username = claims?.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name))?.Value;
+            var password = claims?.FirstOrDefault(x => x.Type.Equals("Password"))?.Value;
+
+            var userViewModel = new UserViewModel(id, email, username, password);
             return View(userViewModel);
         }
 

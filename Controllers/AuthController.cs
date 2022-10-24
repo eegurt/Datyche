@@ -5,6 +5,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Datyche.Controllers
 {
@@ -24,43 +25,46 @@ namespace Datyche.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(UserNamePass input)
+        public async Task<IActionResult> Login(string username, string password)
         {
+            _logger.LogInformation($"UserNamePass: {username} {password}");
             if (!ModelState.IsValid)
             {
                 return new ForbidResult();
             }
 
             var collection = MongoUtils.GetDBUsersCollection();
-            var filter = Builders<BsonDocument>.Filter.Eq("Username", input.Username);
+            User user;
             try
             {
-                var user = collection.Find(filter);
+                user = collection.AsQueryable().Where(u => u.Username.ToLower().Contains(username.ToLower())).Single();
             }
             catch (System.Exception)
             {
                 return new ForbidResult();
             }
+            var filter = Builders<User>.Filter.Eq("Username", username);
+            var projection = Builders<User>.Projection.Include("Password").Exclude("_id");
+            string hashedPassword = user.Password;
+            _logger.LogInformation($"hashed: {hashedPassword}");
 
-            var projection = Builders<BsonDocument>.Projection.Include("Password").Exclude("_id");
-            string hashedPassword = collection.Find(filter).Project(projection).FirstOrDefault().Single().Value.ToString();
-            bool verifiedPassword = BCrypt.Net.BCrypt.Verify(input.Password, hashedPassword);
-            if (!verifiedPassword) 
+            bool verifiedPassword = BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+            if (!verifiedPassword)
             {
                 return new ForbidResult();
             }
 
-            var userValues = collection.Find(filter).Single().ToDictionary();
             try
             {
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, input.Username),
-                    new Claim(ClaimTypes.Email, userValues["Email"].ToString()),
-                    new Claim("Id", userValues["Id"].ToString())
+                    new Claim("Id", user.Id.ToString()),
+                    new Claim(ClaimTypes.Email, user.Email.ToString()),
+                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim("Password", password),
                 };
-                var claimsIdentity = new ClaimsIdentity(claims, "Cookies");
-                await HttpContext.SignInAsync("Cookies", new ClaimsPrincipal(claimsIdentity));
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
 
                 return RedirectToAction("Index", "User");
             }
@@ -72,7 +76,7 @@ namespace Datyche.Controllers
 
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync("Cookies");
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "Auth");
         }
 
@@ -93,7 +97,7 @@ namespace Datyche.Controllers
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
             var collection = MongoUtils.GetDBUsersCollection();
-            collection.InsertOne(user.ToBsonDocument());
+            collection.InsertOne(user);
 
             return Json(user);
         }
@@ -103,10 +107,11 @@ namespace Datyche.Controllers
             string input = "mark";
 
             var collection = MongoUtils.GetDBUsersCollection();
-            var filter = Builders<BsonDocument>.Filter.Eq("Username", input);
-            var userValues = collection.Find(filter).Single().ToDictionary();
+            var filter = Builders<User>.Filter.Eq("Username", input);
 
-            return userValues["Email"].ToString();
+            string hashedPassword = collection.AsQueryable().Where(u => u.Username.ToLower().Contains(input.ToLower())).Single().Password;
+
+            return hashedPassword;
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

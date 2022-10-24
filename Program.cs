@@ -19,6 +19,10 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
+app.Use((context, next) => {
+    Thread.CurrentPrincipal = context.User;
+    return next(context);
+});
 app.UseAuthorization();
 
 app.MapControllerRoute(
