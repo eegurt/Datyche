@@ -7,7 +7,7 @@
         public string Author { get; set; }
         public DateTime Date { get; set; }
         public string[]? Tags { get; set; }
-        public string Media { get; set; }
+        public string? Media { get; set; }
         public Post(string name, string author)
         {
             Id++;
