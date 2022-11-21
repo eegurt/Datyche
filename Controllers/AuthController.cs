@@ -1,7 +1,6 @@
 using Datyche.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
@@ -13,21 +12,14 @@ namespace Datyche.Controllers
     {
         private readonly ILogger<AuthController> _logger;
 
-        public AuthController(ILogger<AuthController> logger)
-        {
-            _logger = logger;
-        }
+        public AuthController(ILogger<AuthController> logger) => _logger = logger;
 
         [HttpGet]
-        public IActionResult Login()
-        {
-            return View();
-        }
+        public IActionResult Login() => View();
 
         [HttpPost]
         public async Task<IActionResult> Login(string username, string password)
         {
-            _logger.LogInformation($"UserNamePass: {username} {password}");
             if (!ModelState.IsValid)
             {
                 return new ForbidResult();
@@ -46,7 +38,6 @@ namespace Datyche.Controllers
             var filter = Builders<User>.Filter.Eq("Username", username);
             var projection = Builders<User>.Projection.Include("Password").Exclude("_id");
             string hashedPassword = user.Password;
-            _logger.LogInformation($"hashed: {hashedPassword}");
 
             bool verifiedPassword = BCrypt.Net.BCrypt.Verify(password, hashedPassword);
             if (!verifiedPassword)
