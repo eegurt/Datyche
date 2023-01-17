@@ -25,7 +25,7 @@ namespace Datyche.Controllers
                 return new ForbidResult();
             }
 
-            var collection = MongoUtils.GetDBUsersCollection();
+            var collection = MongoUtils.GetUsersCollection();
             User user;
             try
             {
@@ -87,7 +87,7 @@ namespace Datyche.Controllers
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
-            var collection = MongoUtils.GetDBUsersCollection();
+            var collection = MongoUtils.GetUsersCollection();
             collection.InsertOne(user);
 
             return Json(user);
@@ -97,7 +97,7 @@ namespace Datyche.Controllers
         {
             string input = "mark";
 
-            var collection = MongoUtils.GetDBUsersCollection();
+            var collection = MongoUtils.GetUsersCollection();
             var filter = Builders<User>.Filter.Eq("Username", input);
 
             string hashedPassword = collection.AsQueryable().Where(u => u.Username.ToLower().Contains(input.ToLower())).Single().Password;
