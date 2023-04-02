@@ -33,7 +33,7 @@ namespace Datyche.Controllers
             }
             catch (System.Exception)
             {
-                return new ForbidResult();
+                return new NotFoundResult();
             }
             var filter = Builders<User>.Filter.Eq("Username", username);
             var projection = Builders<User>.Projection.Include("Password").Exclude("_id");
@@ -52,10 +52,10 @@ namespace Datyche.Controllers
                     new Claim("Id", user.Id.ToString()),
                     new Claim(ClaimTypes.Email, user.Email.ToString()),
                     new Claim(ClaimTypes.Name, user.Username),
-                    new Claim("Password", password),
                 };
-                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
                 return RedirectToAction("Index", "User");
             }

@@ -23,9 +23,8 @@ namespace Datyche.Controllers
             var id = claims?.FirstOrDefault(x => x.Type.Equals("Id"))?.Value;
             var email = claims?.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Email))?.Value;
             var username = claims?.FirstOrDefault(x => x.Type.Equals(ClaimTypes.Name))?.Value;
-            var password = claims?.FirstOrDefault(x => x.Type.Equals("Password"))?.Value;
 
-            var userViewModel = new UserViewModel(id!, email!, username!, password!);
+            var userViewModel = new UserViewModel(id!, email!, username!);
             return View(userViewModel);
         }
 
