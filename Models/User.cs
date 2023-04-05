@@ -10,7 +10,6 @@ namespace Datyche.Models
         [Required(ErrorMessage = "Required field")]
         [StringLength(50)]
         [EmailAddress(ErrorMessage = "Invalid e-mail")]
-
         public string Email { get; set; }
 
         [Required(ErrorMessage = "Required field")]
