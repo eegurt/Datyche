@@ -11,8 +11,13 @@ namespace Datyche.Controllers
     public class AuthController : Controller
     {
         private readonly ILogger<AuthController> _logger;
+        private readonly IMongoDatabase _db;
 
-        public AuthController(ILogger<AuthController> logger) => _logger = logger;
+        public AuthController(ILogger<AuthController> logger, IMongoDatabase db)
+        {
+            _logger = logger;
+            _db = db;
+        }
 
         [HttpGet]
         public IActionResult Login() => View();
@@ -25,7 +30,7 @@ namespace Datyche.Controllers
                 return new ForbidResult();
             }
 
-            var collection = MongoUtils.GetUsersCollection();
+            var collection = _db.GetCollection<User>("users");
             User user;
             try
             {
@@ -87,22 +92,10 @@ namespace Datyche.Controllers
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
-            var collection = MongoUtils.GetUsersCollection();
+            var collection = _db.GetCollection<User>("users");
             collection.InsertOne(user);
 
             return Json(user);
-        }
-
-        public string Test()
-        {
-            string input = "mark";
-
-            var collection = MongoUtils.GetUsersCollection();
-            var filter = Builders<User>.Filter.Eq("Username", input);
-
-            string hashedPassword = collection.AsQueryable().Where(u => u.Username.ToLower().Contains(input.ToLower())).Single().Password;
-
-            return hashedPassword;
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

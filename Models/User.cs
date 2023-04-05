@@ -24,6 +24,7 @@ namespace Datyche.Models
         [RegularExpression(@"(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[\S]+", ErrorMessage = "Password must contain at least 1 uppercase letter, 1 lowercase letter and 1 digit")]
         public string Password { get; set; }
 
+        public User() {}
         public User(ObjectId id, string email, string username, string password) {
             this.Id = id;
             this.Email = email;

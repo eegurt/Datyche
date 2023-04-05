@@ -1,8 +1,6 @@
 using Datyche.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
-using MongoDB.Bson.IO;
 using MongoDB.Driver;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -12,10 +10,12 @@ namespace Datyche.Controllers
     public class PostController : Controller
     {
         private readonly ILogger<PostController> _logger;
+        private readonly IMongoDatabase _db;
 
-        public PostController(ILogger<PostController> logger)
+        public PostController(ILogger<PostController> logger, IMongoDatabase db)
         {
             _logger = logger;
+            _db = db;
         }
 
         [HttpGet]
@@ -39,25 +39,16 @@ namespace Datyche.Controllers
             var files = Request.Form.Files;
             var filesCount = files.Count;
             post.Files = new byte[filesCount][];
-            var path = $"{Directory.GetCurrentDirectory()}/uploads";
+
             for (int i = 0; i < filesCount; i++)
             {
-                string fullPath = $"{path}/{files[i].FileName}";
-
-                using (var fs = new FileStream(fullPath, FileMode.Open))
+                using (BinaryReader br = new BinaryReader(files[i].OpenReadStream()))
                 {
-                    using (BinaryReader br = new BinaryReader(fs))
-                    {
-                        byte[] binData = br.ReadBytes((int) files[i].Length);
-                        post.Files[i] = binData;
-                    }
+                    byte[] binData = br.ReadBytes((int)files[i].Length);
+                    post.Files[i] = binData;
                 }
             }
-
-            var client = new MongoClient(Environment.GetEnvironmentVariable("DATYCHE_DB_DSN"));
-            var database = client.GetDatabase("datyche");
-            var collection = database.GetCollection<Post>("posts");
-
+            var collection = _db.GetCollection<Post>("posts");
             collection.InsertOne(post);
 
             return Json(post);
