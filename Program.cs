@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using MongoDB.Driver;
+using Datyche.Models;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton(new MongoClient(Environment.GetEnvironmentVariable("DATYCHE_DB_DSN")).GetDatabase("datyche"));
+builder.Services.AddDbContext<DataContext>(
+    options => options.UseNpgsql(builder.Configuration.GetConnectionString("DatycheDB")));
 builder.Services.AddControllersWithViews();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 builder.Services.AddAuthorization();
