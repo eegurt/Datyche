@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Datyche.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateUserTable : Migration
+    public partial class CreateUsersTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,7 +19,7 @@ namespace Datyche.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Email = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     Username = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    Password = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
+                    Password = table.Column<string>(type: "character varying(100)", maxLength: 20, nullable: false)
                 },
                 constraints: table =>
                 {

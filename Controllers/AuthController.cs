@@ -1,19 +1,19 @@
 using Datyche.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using MongoDB.Driver;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Datyche.Data;
 
 namespace Datyche.Controllers
 {
     public class AuthController : Controller
     {
         private readonly ILogger<AuthController> _logger;
-        private readonly IMongoDatabase _db;
+        private readonly DatycheContext _db;
 
-        public AuthController(ILogger<AuthController> logger, IMongoDatabase db)
+        public AuthController(ILogger<AuthController> logger, DatycheContext db)
         {
             _logger = logger;
             _db = db;
@@ -27,27 +27,23 @@ namespace Datyche.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return new ForbidResult();
+                return Forbid();
             }
 
-            var collection = _db.GetCollection<User>("users");
             User user;
             try
             {
-                user = collection.AsQueryable().Where(u => u.Username.ToLower().Contains(username.ToLower())).Single();
+                user = _db.Users!.Where(u => u.Username!.ToLower() == username.ToLower()).First();
             }
             catch (System.Exception)
             {
-                return new NotFoundResult();
+                return Unauthorized();
             }
-            var filter = Builders<User>.Filter.Eq("Username", username);
-            var projection = Builders<User>.Projection.Include("Password").Exclude("_id");
-            string hashedPassword = user.Password;
 
-            bool verifiedPassword = BCrypt.Net.BCrypt.Verify(password, hashedPassword);
-            if (!verifiedPassword)
+            string hashedPassword = user.Password!;
+            if (!BCrypt.Net.BCrypt.Verify(password, hashedPassword))
             {
-                return new ForbidResult();
+                return Unauthorized();
             }
 
             try
@@ -55,8 +51,8 @@ namespace Datyche.Controllers
                 var claims = new List<Claim>
                 {
                     new Claim("Id", user.Id.ToString()),
-                    new Claim(ClaimTypes.Email, user.Email.ToString()),
-                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Email, user.Email!),
+                    new Claim(ClaimTypes.Name, user.Username!),
                 };
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var principal = new ClaimsPrincipal(identity);
@@ -83,17 +79,15 @@ namespace Datyche.Controllers
         }
 
         [HttpPost]
-        public IActionResult Signup(User user)
+        // public async Task<IActionResult> Signup([Bind("Id,Email,Username,Password")] User user)
+        public async Task<IActionResult> Signup(User user)
         {
-            if (!ModelState.IsValid)
-            {
-                return new StatusCodeResult(400);
-            }
+            if (!ModelState.IsValid) return ValidationProblem();
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
-            var collection = _db.GetCollection<User>("users");
-            collection.InsertOne(user);
+            await _db.Users!.AddAsync(user);
+            await _db.SaveChangesAsync();
 
             return Json(user);
         }

@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Datyche.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Datyche.Data;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddDbContext<DataContext>(
-    options => options.UseNpgsql(builder.Configuration.GetConnectionString("DatycheDB")));
+builder.Services.AddDbContext<DatycheContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DatycheContext")));
 builder.Services.AddControllersWithViews();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 builder.Services.AddAuthorization();
