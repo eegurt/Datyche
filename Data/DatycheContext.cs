@@ -6,6 +6,7 @@ namespace Datyche.Data
     public class DatycheContext : DbContext
     {
         public DbSet<User> Users { get; set; } = default!;
+        public DbSet<Post> Posts { get; set; } = default!;
 
         public DatycheContext(DbContextOptions<DatycheContext> options) : base(options)
         {

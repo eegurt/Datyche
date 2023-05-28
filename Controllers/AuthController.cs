@@ -84,6 +84,8 @@ namespace Datyche.Controllers
         {
             if (!ModelState.IsValid) return ValidationProblem();
 
+            // TODO: validate duplicate email
+
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
             await _db.Users!.AddAsync(user);

@@ -1,5 +1,48 @@
+@model IEnumerable<Datyche.Models.Post>
+
 @{
     ViewData["Title"] = "Posts";
 }
 
-<a asp-controller="Post" asp-action="Create" class="btn btn-success">Create</a>
+<p>
+    <a asp-controller="Post" asp-action="Create" class="btn btn-success">Create New</a>
+</p>
+
+<table class="table">
+<tbody>
+<thead>
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Title)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Author)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.DateCreated)
+        </th>
+        <th>
+            Action
+        </th>
+    </tr>
+</thead>
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @item.Title
+        </td>
+        <td>
+            @item.Author
+        </td>
+        <td>
+            @item.DateCreated.ToLocalTime()
+        </td>
+        <td>
+            <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+            <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+            <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+        </td>
+    </tr>
+}
+</tbody>
+</table>
