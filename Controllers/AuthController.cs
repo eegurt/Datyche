@@ -79,12 +79,12 @@ namespace Datyche.Controllers
         }
 
         [HttpPost]
-        // public async Task<IActionResult> Signup([Bind("Id,Email,Username,Password")] User user)
         public async Task<IActionResult> Signup(User user)
         {
             if (!ModelState.IsValid) return ValidationProblem();
 
-            // TODO: validate duplicate email
+            if (_db.Users.Any(u => u.Email.ToLower() == user.Email.ToLower())) return Conflict();
+            if (_db.Users.Any(u => u.Username.ToLower() == user.Username.ToLower())) return Conflict();
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
