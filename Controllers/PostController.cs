@@ -86,18 +86,21 @@ namespace Datyche.Controllers
             var post = await _db.Posts.FindAsync(id);
             if (post == null) return NotFound();
 
-            return View(post);
+            var bfu = new BufferedFilesUploadDb{Post = post};
+
+            return View(bfu);
         }
 
         // POST: Post/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        // TODO: Include Files
         // TODO: Handle DateTime binding
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id", "Title", "Description")] Post post)
+        public async Task<IActionResult> Edit(int id, BufferedFilesUploadDb bfu)
         {
+            Post post = bfu.Post;
+            
             if (id != post.Id) return NotFound();
 
             if (!ModelState.IsValid) return BadRequest("Not a valid data");
@@ -107,6 +110,8 @@ namespace Datyche.Controllers
 
             existingPost.Title = post.Title;
             existingPost.Description = post.Description;
+
+            existingPost.Files = await OnPostUploadAsync(bfu.FormFiles);
 
             await _db.SaveChangesAsync();
 
@@ -171,6 +176,26 @@ namespace Datyche.Controllers
         public bool PostExists(int id)
         {
             return _db.Posts.Any(x => x.Id == id);
+        }
+
+        public async Task<byte[][]> OnPostUploadAsync(List<IFormFile> formFiles)
+        {
+            byte[][] files = new byte[formFiles.Count][];
+
+            using (var memoryStream = new MemoryStream())
+            {
+                for(int i = 0; i < formFiles.Count; i++)
+                {
+                    await formFiles[i].CopyToAsync(memoryStream);
+
+                    // Do not upload the file if more than 50 MB
+                    if (memoryStream.Length > 52428800) return null;
+                    
+                    files[i] = memoryStream.ToArray();
+                }
+            }
+
+            return files;
         }
     }
 }

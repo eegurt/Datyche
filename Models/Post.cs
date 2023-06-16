@@ -13,6 +13,6 @@ namespace Datyche.Models
         public int Author { get; set; }
         public DateTime DateCreated { get; set; } // TODO: ToLocalTime() when rendering page
         public string[]? Tags { get; set; }
-        public byte[][]? Files { get; set; }
+        public byte[][]? Files { get; set; } // FIXME: Exclude this field (many-to-many relation) make bridge table idk
     }
 }

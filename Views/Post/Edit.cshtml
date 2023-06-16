@@ -1,44 +1,43 @@
-@model Datyche.Models.Post
+@model Datyche.Models.BufferedFilesUploadDb
 
 @{
-    ViewData["Title"] = $"Edit - {Model.Title}";
+    ViewData["Title"] = $"Edit - {Model.Post.Title}";
 }
 
 <h4>Post</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Post.Id" />
             <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
+                <label asp-for="Post.Title" class="control-label"></label>
+                <input asp-for="Post.Title" class="form-control" />
+                <span asp-validation-for="Post.Title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
+                <label asp-for="Post.Description" class="control-label"></label>
+                <input asp-for="Post.Description" class="form-control" />
+                <span asp-validation-for="Post.Description" class="text-danger"></span>
             </div>
-            
-            <!-- TODO: Complex types binding -->
 
             @* <div class="form-group">
-                <label asp-for="Date" class="control-label"></label>
-                <input asp-for="Date" class="form-control" />
-                <span asp-validation-for="Date" class="text-danger"></span>
+                <label asp-for="Post.Date" class="control-label"></label>
+                <input asp-for="Post.Date" class="form-control" />
+                <span asp-validation-for="Post.Date" class="text-danger"></span>
             </div> *@
             @* <div class="form-group">
-                <label asp-for="Tags" class="control-label"></label>
-                <input asp-for="Tags" class="form-control" />
-                <span asp-validation-for="Tags" class="text-danger"></span>
+                <label asp-for="Post.Tags" class="control-label"></label>
+                <input asp-for="Post.Tags" class="form-control" />
+                <span asp-validation-for="Post.Tags" class="text-danger"></span>
             </div> *@
-            @* <div class="form-group">
-                <label asp-for="Files" class="control-label"></label>
-                <input asp-for="Files" class="form-control" />
-                <span asp-validation-for="Files" class="text-danger"></span>
-            </div> *@
+
+            <div class="form-group">
+                <label asp-for="FormFiles" class="control-label"></label>
+                <input asp-for="FormFiles" type="file" class="d-block" multiple>
+            </div>
+
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
