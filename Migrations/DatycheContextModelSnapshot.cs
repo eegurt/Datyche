@@ -22,6 +22,23 @@ namespace Datyche.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Datyche.Models.File", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Files");
+                });
+
             modelBuilder.Entity("Datyche.Models.Post", b =>
                 {
                     b.Property<int>("Id")
@@ -33,17 +50,11 @@ namespace Datyche.Migrations
                     b.Property<int>("Author")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<DateTime>("DateCreated")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
-
-                    b.Property<byte[][]>("Files")
-                        .HasColumnType("bytea[]");
-
-                    b.Property<string[]>("Tags")
-                        .HasColumnType("text[]");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -80,6 +91,36 @@ namespace Datyche.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("FilePost", b =>
+                {
+                    b.Property<int>("FilesId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PostsId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("FilesId", "PostsId");
+
+                    b.HasIndex("PostsId");
+
+                    b.ToTable("FilePost");
+                });
+
+            modelBuilder.Entity("FilePost", b =>
+                {
+                    b.HasOne("Datyche.Models.File", null)
+                        .WithMany()
+                        .HasForeignKey("FilesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Datyche.Models.Post", null)
+                        .WithMany()
+                        .HasForeignKey("PostsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

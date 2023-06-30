@@ -59,18 +59,19 @@ namespace Datyche.Controllers
             post.Author = Int32.Parse(claims?.FirstOrDefault(x => x.Type.Equals("Id"))?.Value!);
             post.DateCreated = DateTime.Now.ToUniversalTime();
 
-            var files = Request.Form.Files;
-            var filesCount = files.Count;
-            post.Files = new byte[filesCount][];
+            // FIXME
+            // var files = Request.Form.Files;
+            // var filesCount = files.Count;
+            // post.Files = new byte[filesCount][];
 
-            for (int i = 0; i < filesCount; i++)
-            {
-                using (BinaryReader br = new BinaryReader(files[i].OpenReadStream()))
-                {
-                    byte[] binData = br.ReadBytes((int)files[i].Length);
-                    post.Files[i] = binData;
-                }
-            }
+            // for (int i = 0; i < filesCount; i++)
+            // {
+            //     using (BinaryReader br = new BinaryReader(files[i].OpenReadStream()))
+            //     {
+            //         byte[] binData = br.ReadBytes((int)files[i].Length);
+            //         post.Files[i] = binData;
+            //     }
+            // }
 
             await _db.Posts.AddAsync(post);
             await _db.SaveChangesAsync();
@@ -86,47 +87,46 @@ namespace Datyche.Controllers
             var post = await _db.Posts.FindAsync(id);
             if (post == null) return NotFound();
 
-            var bfu = new BufferedFilesUploadDb{Post = post};
-
-            return View(bfu);
+            return View(post);
         }
 
         // POST: Post/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         // TODO: Handle DateTime binding
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, BufferedFilesUploadDb bfu)
-        {
-            Post post = bfu.Post;
+        // [HttpPost]
+        // [ValidateAntiForgeryToken]
+        // public async Task<IActionResult> Edit(int id, BufferedFilesUploadDb bfu)
+        // {
+        //     Post post = bfu.Post;
             
-            if (id != post.Id) return NotFound();
+        //     if (id != post.Id) return NotFound();
 
-            if (!ModelState.IsValid) return BadRequest("Not a valid data");
+        //     if (!ModelState.IsValid) return BadRequest("Not a valid data");
 
-            var existingPost = await _db.Posts.FindAsync(id);
-            if (existingPost == null) return NotFound();
+        //     var existingPost = await _db.Posts.FindAsync(id);
+        //     if (existingPost == null) return NotFound();
 
-            existingPost.Title = post.Title;
-            existingPost.Description = post.Description;
+        //     existingPost.Title = post.Title;
+        //     existingPost.Description = post.Description;
 
-            existingPost.Files = await OnPostUploadAsync(bfu.FormFiles);
+        //     // FIXME
+        //     // existingPost.Files = await OnPostUploadAsync(bfu.FormFiles);
 
-            await _db.SaveChangesAsync();
+        //     await _db.SaveChangesAsync();
 
-            // TODO: Concurrency
-            // try {
-            //     _db.Update(post);
-            //     await _db.SaveChangesAsync();
-            // }
-            // catch (DbUpdateConcurrencyException) {
-            //     if (!PostExists(post.Id)) return NotFound();
-            //     throw;
-            // }
+        //     // TODO: Concurrency
+        //     // try {
+        //     //     _db.Update(post);
+        //     //     await _db.SaveChangesAsync();
+        //     // }
+        //     // catch (DbUpdateConcurrencyException) {
+        //     //     if (!PostExists(post.Id)) return NotFound();
+        //     //     throw;
+        //     // }
 
-            return RedirectToAction(nameof(Index));
-        }
+        //     return RedirectToAction(nameof(Index));
+        // }
 
         // GET: Post/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -176,26 +176,6 @@ namespace Datyche.Controllers
         public bool PostExists(int id)
         {
             return _db.Posts.Any(x => x.Id == id);
-        }
-
-        public async Task<byte[][]> OnPostUploadAsync(List<IFormFile> formFiles)
-        {
-            byte[][] files = new byte[formFiles.Count][];
-
-            using (var memoryStream = new MemoryStream())
-            {
-                for(int i = 0; i < formFiles.Count; i++)
-                {
-                    await formFiles[i].CopyToAsync(memoryStream);
-
-                    // Do not upload the file if more than 50 MB
-                    if (memoryStream.Length > 52428800) return null;
-                    
-                    files[i] = memoryStream.ToArray();
-                }
-            }
-
-            return files;
         }
     }
 }
