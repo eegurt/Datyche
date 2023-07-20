@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Datyche.Migrations
 {
     [DbContext(typeof(DatycheContext))]
-    [Migration("20230630124018_PostsAndFiles")]
+    [Migration("20230708174653_PostsAndFiles")]
     partial class PostsAndFiles
     {
         /// <inheritdoc />
@@ -37,7 +37,12 @@ namespace Datyche.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("PostId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("PostId");
 
                     b.ToTable("Files");
                 });
@@ -96,34 +101,20 @@ namespace Datyche.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("FilePost", b =>
+            modelBuilder.Entity("Datyche.Models.File", b =>
                 {
-                    b.Property<int>("FilesId")
-                        .HasColumnType("integer");
+                    b.HasOne("Datyche.Models.Post", "Post")
+                        .WithMany("Files")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Property<int>("PostsId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("FilesId", "PostsId");
-
-                    b.HasIndex("PostsId");
-
-                    b.ToTable("FilePost");
+                    b.Navigation("Post");
                 });
 
-            modelBuilder.Entity("FilePost", b =>
+            modelBuilder.Entity("Datyche.Models.Post", b =>
                 {
-                    b.HasOne("Datyche.Models.File", null)
-                        .WithMany()
-                        .HasForeignKey("FilesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Datyche.Models.Post", null)
-                        .WithMany()
-                        .HasForeignKey("PostsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Files");
                 });
 #pragma warning restore 612, 618
         }

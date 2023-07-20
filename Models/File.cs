@@ -8,7 +8,6 @@ namespace Datyche.Models
 
         public string Path { get; set; } = null!;
 
-        [JsonIgnore]
-        public IList<Post>? Posts { get; set; }
+        public Post Post { get; set; } = null!;
     }
 }

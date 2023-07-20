@@ -40,6 +40,9 @@ namespace Datyche.Controllers
                 return NotFound();
             }
 
+            var files = _db.Files.Where(f => f.Post.Id == id).ToList(); // TODO: Make async?
+            post.Files = files;
+
             return View(post);
         }
 
@@ -59,19 +62,24 @@ namespace Datyche.Controllers
             post.Author = Int32.Parse(claims?.FirstOrDefault(x => x.Type.Equals("Id"))?.Value!);
             post.DateCreated = DateTime.Now.ToUniversalTime();
 
-            // FIXME
-            // var files = Request.Form.Files;
-            // var filesCount = files.Count;
-            // post.Files = new byte[filesCount][];
+            // TODO: Keep files order
+            foreach (var file in HttpContext.Request.Form.Files)
+            {
+                var fileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+                var fullPath = $"uploads/{fileName}";
 
-            // for (int i = 0; i < filesCount; i++)
-            // {
-            //     using (BinaryReader br = new BinaryReader(files[i].OpenReadStream()))
-            //     {
-            //         byte[] binData = br.ReadBytes((int)files[i].Length);
-            //         post.Files[i] = binData;
-            //     }
-            // }
+                using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+                Datyche.Models.File fileToAddToDB = new()
+                {
+                    Path = fileName, // TODO: Rename the "Path" column to something else (EFCore)
+                    Post = post
+                };
+                await _db.Files.AddAsync(fileToAddToDB);
+            }
 
             await _db.Posts.AddAsync(post);
             await _db.SaveChangesAsync();
@@ -82,55 +90,30 @@ namespace Datyche.Controllers
         // GET: Post/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _db.Posts == null) return NotFound();
+            // if (id == null || _db.Posts == null) return NotFound();
 
-            var post = await _db.Posts.FindAsync(id);
-            if (post == null) return NotFound();
+            // var post = await _db.Posts.FindAsync(id);
+            // if (post == null) return NotFound();
 
-            return View(post);
+            return NotFound();
         }
 
         // POST: Post/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         // TODO: Handle DateTime binding
-        // [HttpPost]
-        // [ValidateAntiForgeryToken]
-        // public async Task<IActionResult> Edit(int id, BufferedFilesUploadDb bfu)
-        // {
-        //     Post post = bfu.Post;
-            
-        //     if (id != post.Id) return NotFound();
-
-        //     if (!ModelState.IsValid) return BadRequest("Not a valid data");
-
-        //     var existingPost = await _db.Posts.FindAsync(id);
-        //     if (existingPost == null) return NotFound();
-
-        //     existingPost.Title = post.Title;
-        //     existingPost.Description = post.Description;
-
-        //     // FIXME
-        //     // existingPost.Files = await OnPostUploadAsync(bfu.FormFiles);
-
-        //     await _db.SaveChangesAsync();
-
-        //     // TODO: Concurrency
-        //     // try {
-        //     //     _db.Update(post);
-        //     //     await _db.SaveChangesAsync();
-        //     // }
-        //     // catch (DbUpdateConcurrencyException) {
-        //     //     if (!PostExists(post.Id)) return NotFound();
-        //     //     throw;
-        //     // }
-
-        //     return RedirectToAction(nameof(Index));
-        // }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id)
+        {
+            // FIXME Implement edit
+            return NotFound();
+        }
 
         // GET: Post/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+            // FIXME Only author can edit or delete own post 
             if (id == null || _db.Posts == null)
             {
                 return NotFound();
@@ -155,12 +138,18 @@ namespace Datyche.Controllers
                 return Problem("Entity set 'DatycheContext.Posts'  is null.");
             }
 
+            var files = _db.Files.Where(f => f.Post.Id == id).ToList();
+            foreach (var file in files)
+            {
+                System.IO.File.Delete($"uploads/{file.Path}");
+            }
+
             var post = await _db.Posts.FindAsync(id);
             if (post != null)
             {
                 _db.Posts.Remove(post);
             }
-            
+
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

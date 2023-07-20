@@ -1,11 +1,15 @@
 global using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Datyche.Data;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddDbContext<DatycheContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DatycheContext")));
+
 builder.Services.AddControllersWithViews();
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 builder.Services.AddAuthorization();
 
@@ -18,7 +22,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.Use((context, next) =>
@@ -27,6 +30,13 @@ app.Use((context, next) =>
     return next(context);
 });
 app.UseAuthorization();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "uploads")),
+    RequestPath = "/media"
+});
 
 app.MapControllerRoute(
     name: "default",

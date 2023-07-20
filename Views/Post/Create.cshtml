@@ -16,10 +16,10 @@
             <label>Description</label>
             <input class="d-block" asp-for="Description">
         </div>
-        @* <div class="mt-3">
+        <div class="mt-3">
             <label>Files</label>
-            <input type="file" class="d-block" multiple>
-        </div> *@
+            <input asp-for="Files" type="file" class="d-block" multiple>
+        </div>
         <input type="submit" class="btn-primary mt-3" value="Create">
     </form>
 </div>
