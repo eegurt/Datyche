@@ -113,7 +113,6 @@ namespace Datyche.Controllers
         // GET: Post/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            // FIXME Only author can edit or delete own post 
             if (id == null || _db.Posts == null)
             {
                 return NotFound();
@@ -123,6 +122,13 @@ namespace Datyche.Controllers
             if (post == null)
             {
                 return NotFound();
+            }
+
+            var claims = ClaimsPrincipal.Current!.Identities.FirstOrDefault()!.Claims.ToList();
+            int authorId = Int32.Parse(claims?.FirstOrDefault(x => x.Type.Equals("Id"))?.Value!);
+            if (authorId != post.Author)
+            {
+                return Forbid();
             }
 
             return View(post);
@@ -138,19 +144,28 @@ namespace Datyche.Controllers
                 return Problem("Entity set 'DatycheContext.Posts'  is null.");
             }
 
+            var post = await _db.Posts.FindAsync(id);
+            if (post == null)
+            {
+                return NotFound();
+            }
+
+            var claims = ClaimsPrincipal.Current!.Identities.FirstOrDefault()!.Claims.ToList();
+            int authorId = Int32.Parse(claims?.FirstOrDefault(x => x.Type.Equals("Id"))?.Value!);
+            if (authorId != post!.Author)
+            {
+                return Forbid();
+            }
+
             var files = _db.Files.Where(f => f.Post.Id == id).ToList();
             foreach (var file in files)
             {
                 System.IO.File.Delete($"uploads/{file.Path}");
             }
 
-            var post = await _db.Posts.FindAsync(id);
-            if (post != null)
-            {
-                _db.Posts.Remove(post);
-            }
-
+            _db.Posts.Remove(post);
             await _db.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
