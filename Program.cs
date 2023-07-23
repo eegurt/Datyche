@@ -31,6 +31,7 @@ app.Use((context, next) =>
 });
 app.UseAuthorization();
 
+app.UseStaticFiles();
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
