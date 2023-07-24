@@ -1,4 +1,4 @@
-@model IEnumerable<Datyche.Models.Post>
+@model IEnumerable<Datyche.Models.PostViewModel>
 
 @{
     ViewData["Title"] = "Posts";
@@ -19,7 +19,7 @@
             @Html.DisplayNameFor(model => model.Author)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.DateCreated)
+            Date published
         </th>
         <th>
             Action

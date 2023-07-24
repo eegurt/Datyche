@@ -22,8 +22,17 @@ namespace Datyche.Controllers
         public async Task<IActionResult> Index()
         {
             var postList = await _db.Posts.ToListAsync();
+            List<PostViewModel> postVMList = new();
+            
+            foreach (var post in postList)
+            {
+                string author = await GetAuthorById(post.Author);
+                PostViewModel postVM = new PostViewModel(post.Id, post.Title, author, post.DateCreated);
 
-            return View(postList);
+                postVMList.Add(postVM);
+            }
+
+            return View(postVMList);
         }
 
         // GET: Post/Details/5
@@ -40,10 +49,12 @@ namespace Datyche.Controllers
                 return NotFound();
             }
 
+            string author = await GetAuthorById(post.Author);
             var files = _db.Files.Where(f => f.Post.Id == id).ToList(); // TODO: Make async?
-            post.Files = files;
 
-            return View(post);
+            PostViewModel postVM = new PostViewModel(post.Id, post.Title, author, post.DateCreated, post.Description, files);
+
+            return View(postVM);
         }
 
         // GET: Post/Create
@@ -95,7 +106,7 @@ namespace Datyche.Controllers
             var post = await _db.Posts.FindAsync(id);
             if (post == null) return NotFound();
 
-            var files = _db.Files.Where(f => f.Post.Id == id).ToList();            
+            var files = _db.Files.Where(f => f.Post.Id == id).ToList();
             post.Files = files;
 
             return View(post);
@@ -187,9 +198,11 @@ namespace Datyche.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        public bool PostExists(int id)
+        public async ValueTask<string> GetAuthorById(int id)
         {
-            return _db.Posts.Any(x => x.Id == id);
+            var user = await _db.Users.FindAsync(id);
+
+            return user!.Username;
         }
     }
 }
