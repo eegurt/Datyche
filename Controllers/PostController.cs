@@ -99,12 +99,20 @@ namespace Datyche.Controllers
         }
 
         // GET: Post/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _db.Posts == null) return NotFound();
 
             var post = await _db.Posts.FindAsync(id);
             if (post == null) return NotFound();
+
+            var claims = ClaimsPrincipal.Current!.Identities.FirstOrDefault()!.Claims.ToList();
+            int authorId = Int32.Parse(claims?.FirstOrDefault(x => x.Type.Equals("Id"))?.Value!);
+            if (authorId != post.Author)
+            {
+                return Forbid();
+            }
 
             var files = _db.Files.Where(f => f.Post.Id == id).ToList();
             post.Files = files;
@@ -114,6 +122,7 @@ namespace Datyche.Controllers
 
         // POST: Post/Edit/5
         [HttpPost]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Post post)
         {
@@ -122,6 +131,13 @@ namespace Datyche.Controllers
 
             var existingPost = await _db.Posts.FindAsync(id);
             if (existingPost == null) return NotFound();
+
+            var claims = ClaimsPrincipal.Current!.Identities.FirstOrDefault()!.Claims.ToList();
+            int authorId = Int32.Parse(claims?.FirstOrDefault(x => x.Type.Equals("Id"))?.Value!);
+            if (authorId != existingPost.Author)
+            {
+                return Forbid();
+            }
 
             existingPost.Title = post.Title;
             existingPost.Description = post.Description;
@@ -132,6 +148,7 @@ namespace Datyche.Controllers
         }
 
         // GET: Post/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _db.Posts == null)
@@ -157,6 +174,7 @@ namespace Datyche.Controllers
 
         // POST: Post/Delete/5
         [HttpPost, ActionName("Delete")]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
@@ -175,7 +193,7 @@ namespace Datyche.Controllers
             int authorId = Int32.Parse(claims?.FirstOrDefault(x => x.Type.Equals("Id"))?.Value!);
             if (authorId != post!.Author)
             {
-                return Forbid();
+                return Forbid(); // TODO middleware? for edit, delete, etc.
             }
 
             var files = _db.Files.Where(f => f.Post.Id == id).ToList();

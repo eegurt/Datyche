@@ -56,12 +56,14 @@
 		}
         <div class="body-container col-sm-4">
             <h1>@Model.Title</h1>
+            <p>@Model.Description</p>
             <p>Author: <strong>@Model.Author</strong></p>
             <p>Published: <strong>@Model.DateCreated</strong></p>
         </div>
     </div>
 </div>
 <div>
+	<a asp-action="Index">Back to List</a> |
 	<a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-	<a asp-action="Index">Back to List</a>
+	<a asp-action="Delete" asp-route-id="@Model?.Id">Delete</a>
 </div>
