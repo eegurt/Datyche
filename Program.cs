@@ -9,8 +9,14 @@ builder.Services.AddDbContext<DatycheContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DatycheContext")));
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddRouting(o => o.LowercaseUrls = true);
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+builder.Services
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(o => {
+        o.LoginPath = new PathString("/auth/login");
+        o.ReturnUrlParameter = "";
+    });
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
