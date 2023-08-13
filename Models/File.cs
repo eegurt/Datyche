@@ -6,7 +6,7 @@ namespace Datyche.Models
     {
         public int Id { get; set; }
 
-        public string Path { get; set; } = null!;
+        public string Name { get; set; } = null!;
 
         public Post Post { get; set; } = null!;
     }

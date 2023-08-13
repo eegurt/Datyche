@@ -86,7 +86,7 @@ namespace Datyche.Controllers
 
                 Datyche.Models.File fileToAddToDB = new()
                 {
-                    Path = fileName, // TODO: Rename the "Path" column to something else (EFCore)
+                    Name = fileName,
                     Post = post
                 };
                 await _db.Files.AddAsync(fileToAddToDB);
@@ -199,7 +199,7 @@ namespace Datyche.Controllers
             var files = _db.Files.Where(f => f.Post.Id == id).ToList();
             foreach (var file in files)
             {
-                System.IO.File.Delete($"uploads/{file.Path}");
+                System.IO.File.Delete($"uploads/{file.Name}");
             }
 
             _db.Posts.Remove(post);
