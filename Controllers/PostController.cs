@@ -73,10 +73,10 @@ namespace Datyche.Controllers
             post.Author = Int32.Parse(claims?.FirstOrDefault(x => x.Type.Equals("Id"))?.Value!);
             post.DateCreated = DateTime.Now.ToUniversalTime();
 
-            // TODO: Keep files order
+            // FIXME: Keep files order
             foreach (var file in HttpContext.Request.Form.Files)
             {
-                var fileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+                var fileName = Guid.NewGuid().ToString();
                 var fullPath = $"uploads/{fileName}";
 
                 using (var fileStream = new FileStream(fullPath, FileMode.Create))
@@ -126,7 +126,6 @@ namespace Datyche.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Post post)
         {
-            // TODO Edit files?
             if (!ModelState.IsValid) return BadRequest("Not a valid data");
 
             var existingPost = await _db.Posts.FindAsync(id);
@@ -189,11 +188,12 @@ namespace Datyche.Controllers
                 return NotFound();
             }
 
+            // TODO: middleware? check author of the post for edit, delete, etc.
             var claims = ClaimsPrincipal.Current!.Identities.FirstOrDefault()!.Claims.ToList();
             int authorId = Int32.Parse(claims?.FirstOrDefault(x => x.Type.Equals("Id"))?.Value!);
             if (authorId != post!.Author)
             {
-                return Forbid(); // TODO middleware? for edit, delete, etc.
+                return Forbid(); 
             }
 
             var files = _db.Files.Where(f => f.Post.Id == id).ToList();

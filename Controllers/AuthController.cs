@@ -83,7 +83,7 @@ namespace Datyche.Controllers
         {
             if (!ModelState.IsValid) return ValidationProblem();
 
-            // TODO: Status code response pages
+            // TODO: Status code response pages?
             if (_db.Users.Any(u => u.Email.ToLower() == user.Email.ToLower())) return Conflict();
             if (_db.Users.Any(u => u.Username.ToLower() == user.Username.ToLower())) return Conflict();
 
